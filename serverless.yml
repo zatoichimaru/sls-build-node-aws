@@ -1,0 +1,36 @@
+service: sls-build-nodejs-express-aws
+useDotenv: true
+
+custom:
+  fileEnv: file(${env})
+  region: ${self.fileEnv.AWS_REGION}
+  stage: ${self.fileEnv.APP_ENV}
+  #variablesResolutionMode: 20210326
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  memorySize: 256
+  timeout: 10
+  logRetentionInDays: 90
+  lambdaHashingVersion: 20201221
+  logs:
+    httpApi: true
+  httpApi:
+    cors: true
+
+functions:
+  app:
+    handler: src/server.handler
+    # reservedConcurrency: 100
+    events:
+      - httpApi:
+          path: '/{proxy+}'
+          method: '*'
+
+package:
+  individually: true
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-plugin-typescript
